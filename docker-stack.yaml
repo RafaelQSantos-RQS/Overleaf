@@ -1,13 +1,13 @@
 volumes:
   OVERLEAF_SHARELATEX_DATA:
     name: OVERLEAF_SHARELATEX_DATA
-    external: true
+    driver: local
   OVERLEAF_MONGO_DATA:
     name: OVERLEAF_MONGO_DATA
-    external: true
+    driver: local
   OVERLEAF_REDIS_DATA:
     name: OVERLEAF_REDIS_DATA
-    external: true
+    driver: local
 
 networks:
   OVERLEAF_INTERNAL_NETWORK:
@@ -22,7 +22,7 @@ networks:
 
 services:
   sharelatex:
-    image: sharelatex/sharelatex:6.1.2
+    image: local/sharelatex-full:6.1.2
     depends_on:
       - mongo
       - redis
@@ -57,11 +57,6 @@ services:
         - "traefik.http.routers.overleaf.tls=true"
         - "traefik.http.services.overleaf.loadbalancer.server.port=80"
         - "traefik.http.services.overleaf.loadbalancer.server.scheme=http"
-    # ports:
-    #   - target: 80
-    #     published: 8080
-    #     protocol: tcp
-    #     mode: ingress
     stop_grace_period: 60s
     volumes:
       - OVERLEAF_SHARELATEX_DATA:/var/lib/overleaf
@@ -167,8 +162,6 @@ services:
       MONGO_INITDB_DATABASE: sharelatex
       GLIBC_TUNABLES: glibc.pthread.rseq=1
     extra_hosts:
-      # Required when using the automatic database setup for initializing the replica set.
-      # This override is not needed when running the setup after starting up mongo.
       - mongo:127.0.0.1
     healthcheck:
       test: echo 'db.stats().ok' | mongosh localhost:27017/test --quiet
@@ -201,23 +194,3 @@ services:
           memory: 256M
     volumes:
       - OVERLEAF_REDIS_DATA:/data
-
-  # ldap:
-  #    restart: always
-  #    image: rroemhild/test-openldap
-  #    container_name: ldap
-
-  # See https://github.com/jwilder/nginx-proxy for documentation on how to configure the nginx-proxy container,
-  # and https://github.com/overleaf/overleaf/wiki/HTTPS-reverse-proxy-using-Nginx for an example of some recommended
-  # settings. We recommend using a properly managed nginx instance outside of the Overleaf Server Pro setup,
-  # but the example here can be used if you'd prefer to run everything with docker-compose
-
-  # nginx-proxy:
-  #     image: jwilder/nginx-proxy
-  #     container_name: nginx-proxy
-  #     ports:
-  #       - "80:80"
-  #       - "443:443"
-  #     volumes:
-  #       - /var/run/docker.sock:/tmp/docker.sock:ro
-  #       - /home/overleaf/tmp:/etc/nginx/certs

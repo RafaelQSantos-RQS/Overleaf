@@ -4,9 +4,22 @@ Personal Overleaf (ShareLaTeX) deployment using Docker Swarm.
 
 ## Stack
 
-- **Overleaf**: `sharelatex/sharelatex:6.1.2`
+- **Overleaf**: Custom image (`local/sharelatex-full:6.1.2`)
 - **MongoDB**: `mongo:8.0` (replica set)
 - **Redis**: `redis:6.2`
+
+## Custom Image
+
+The Docker image includes:
+- TeX Live 2025 (updated from 2024)
+- Additional packages: graphviz, gnuplot, inkscape, asymptote
+- Python packages: latexminted, dot2tex
+- Shell-escape enabled
+
+```bash
+# Build custom image
+docker build -t local/sharelatex-full:6.1.2 .
+```
 
 ## Deployment
 
@@ -20,7 +33,7 @@ docker volume create --name OVERLEAF_REDIS_DATA
 docker network create -d overlay swarm-net
 
 # Deploy stack
-docker stack deploy -c docker-stack.yaml overleaf
+PROXY_URL=overleaf.example.com docker stack deploy -c docker-stack.yaml overleaf
 ```
 
 ## Configuration
