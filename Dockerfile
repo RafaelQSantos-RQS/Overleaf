@@ -1,4 +1,5 @@
-FROM sharelatex/sharelatex:6.1.2
+ARG SHARELEX_TAG=6.1.2
+FROM sharelatex/sharelatex:${SHARELEX_TAG}
 
 # Atualizar apontando para o repositório histórico do TeX Live 2025
 RUN set -x && \
